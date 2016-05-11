@@ -8,9 +8,9 @@
 --			- Douglas Torres   #11-11027
 --			- Roberto Camara   #11-10235
 
-data Term = Var Char | Neg Term | And Term Term | Or Term Term | Impl Term Term | Equ Term Term | Inequ Term Term | Constant Bool
+data Term = Var Char | Neg Term | And Term Term | Or Term Term | Impl Term Term | Equ Term Term | Inequ Term Term | Constant String
 data Equation = Equivalent Term Term 
-data Sust = Sust Term Term
+--data Sust = 
 
 -- Declaracion de las variables de la 'a' a la 'z' como Vars
 a :: Term
@@ -92,10 +92,10 @@ z :: Term
 z = Var 'z'
 
 true :: Term
-true = Constant True
+true = Constant "true"
 
 false :: Term
-false = Constant False
+false = Constant "false"
 
 -- OPERADORES
 
@@ -142,9 +142,9 @@ term1 =: term2 = term2
 -- FORMA DE IMPRESION
 showTerm :: Term -> String
 showTerm (Var x) = x:[]
-
+showTerm (Constant bool) = bool 
 showTerm (Neg (Var x)) = "¬" ++ showTerm(Var x)
-showTerm (Neg t) = "¬" ++ showTerm(t)
+showTerm (Neg t) = "¬(" ++ showTerm(t) ++ ")"
 
 -- Conjuncion
 showTerm (And (Var x) (Var y)) = showTerm(Var x) ++ " /\\ " ++ showTerm(Var y)
@@ -153,7 +153,7 @@ showTerm (And t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " /\\ " ++ showTerm(Var 
 showTerm (And t1 t2) = "(" ++ showTerm t1 ++ ") /\\ (" ++ showTerm t2 ++ ")"
 
 -- Disyuncion
-showTerm (Or (Var x) (Var y)) = showTerm(Var x) ++ "\\/ " ++ showTerm(Var y)
+showTerm (Or (Var x) (Var y)) = showTerm(Var x) ++ " \\/ " ++ showTerm(Var y)
 showTerm (Or (Var x) t) = showTerm(Var x) ++ " \\/ (" ++ showTerm(t) ++ ")"
 showTerm (Or t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " \\/ " ++ showTerm(Var x)
 showTerm (Or t1 t2) = "(" ++ showTerm t1 ++ ") \\/ (" ++ showTerm t2 ++ ")"
@@ -192,4 +192,4 @@ lambda :: ()
 lambda = ()
 
 -- Funciones del sistema
-leibniz 
+
