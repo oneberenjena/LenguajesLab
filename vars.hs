@@ -10,7 +10,7 @@
 
 data Term = Var Char | Neg Term | And Term Term | Or Term Term | Impl Term Term | Equ Term Term | Inequ Term Term | Constant String
 data Equation = Equivalent Term Term 
-data Sust = Simple Term Term
+data Sust = Simple Term Term | Tup2 (Term, Sust, Term) | Tup3 (Term, Term, Sust, Term, Term)
 
 
 -- Esta funcion lambda es la identidad, dado un elemento devuelve el mismo elemento
@@ -53,9 +53,11 @@ class Sustituible s where
 -- Se asocia el comportamiento de un objeto Sust en la clase sustituible para
 -- la funcion sust.
 instance Sustituible Sust where
-	sust (Var x) (Simple (Var y) (Var z)) = abstraer (Var y) (Var x) (Var z)
-	sust t (Simple (Var y) (Var z)) = abstraer (Var y) t (Var z)
-
+	sust t1 (Simple sustme t2) = abstraer sustme t1 t2
+	
+	-- REVISAR
+	sust tsust (Tup2 (t1, Simple sustme1 t2, sustme2)) = sust (sust tsust (Simple sustme1 t1)) (Simple sustme2 t2)
+	sust tsust (Tup3 (t1, t2, Simple sustme1 t3, sustme2, sustme3)) = sust (sust (sust tsust (Simple sustme1 t1)) (Simple sustme2 t2)) (Simple sustme3 t3)
 
 -- Declaracion de las variables de la 'a' a la 'z' como Vars
 a :: Term
