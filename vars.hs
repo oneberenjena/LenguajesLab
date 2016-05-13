@@ -10,7 +10,52 @@
 
 data Term = Var Char | Neg Term | And Term Term | Or Term Term | Impl Term Term | Equ Term Term | Inequ Term Term | Constant String
 data Equation = Equivalent Term Term 
---data Sust = 
+data Sust = Simple Term Term
+
+
+-- Esta funcion lambda es la identidad, dado un elemento devuelve el mismo elemento
+ident = \x -> x
+
+-- Esta funcion lambda recibe dos elementos y devuelve solo el primero que se paso
+killSecond = \x -> \y -> x
+
+-- Esta funcion recibe tres elementos y devuelve disjuntamente el primero con el tercero
+-- Y el segundo con el tercero. Es como una especie de distributiva de derecha a izquierda
+splash = \x -> \y -> \z -> (x z) (y z)
+
+-- ESTA ES LA FUNCION ABSTRAER 
+-- Basicamente toma una variable que es la que va a ser modificada,
+-- un termino que puede ser cualquier conjunto de variables en una operacion
+-- booleana, y la variable por la que se quiere sustituir.
+-- Si no hay instancias de la variable a sustituir en el termino retorna el mismo term
+abstraer :: Term -> Term -> (Term -> Term)
+abstraer (Var x) (Var y) = if x == y then ident else killSecond (Var y)
+abstraer (Var x) (Or t1 t2) = splash (splash (killSecond Or) (abstraer (Var x) t1)) (abstraer (Var x) t2) 
+abstraer (Var x) (And t1 t2) = splash (splash (killSecond And) (abstraer (Var x) t1)) (abstraer (Var x) t2) 
+abstraer (Var x) (Impl t1 t2) = splash (splash (killSecond Impl) (abstraer (Var x) t1)) (abstraer (Var x) t2) 
+abstraer (Var x) (Equ t1 t2) = splash (splash (killSecond Equ) (abstraer (Var x) t1)) (abstraer (Var x) t2) 
+abstraer (Var x) (Inequ t1 t2) = splash (splash (killSecond Inequ) (abstraer (Var x) t1)) (abstraer (Var x) t2) 
+
+abstraer (Or t1 t2) _ = error "solo se puede abstraer una variable"
+abstraer (And t1 t2) _ = error "solo se puede abstraer una variable"
+abstraer (Impl t1 t2) _ = error "solo se puede abstraer una variable"
+abstraer (Equ t1 t2) _ = error "solo se puede abstraer una variable"
+abstraer (Inequ t1 t2) _ = error "solo se puede abstraer una variable"
+
+-- Clase polimorfica para los objetos que son substituibles
+-- De momento nada mas contiene a la funcion polimorfica sust
+-- Recibe un Termino y un objeto de tipo Sust o (Term, Sust, Term) o
+-- (Term, Term, Sust, Term, Term) y devuelve un termino con la sustitucion
+-- aplicada
+class Sustituible s where
+	sust :: Term -> s -> Term
+
+-- Se asocia el comportamiento de un objeto Sust en la clase sustituible para
+-- la funcion sust.
+instance Sustituible Sust where
+	sust (Var x) (Simple (Var y) (Var z)) = abstraer (Var y) (Var x) (Var z)
+	sust t (Simple (Var y) (Var z)) = abstraer (Var y) t (Var z)
+
 
 -- Declaracion de las variables de la 'a' a la 'z' como Vars
 a :: Term
@@ -136,8 +181,9 @@ term1 === term2 = Equivalent term1 term2
 
 -- Operador sustitucion textual
 infixl 6 =:
-(=:) :: Term -> Term -> Term
-term1 =: term2 = term2
+(=:) :: Term -> Term -> Sust
+term1 =: term2 = Simple term2 term1
+
 
 -- FORMA DE IMPRESION
 showTerm :: Term -> String
@@ -171,10 +217,10 @@ showTerm (Equ t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " <==> " ++ showTerm(Var
 showTerm (Equ t1 t2) = "(" ++ showTerm t1 ++ ") <==> (" ++ showTerm t2 ++ ")"
 
 -- Inequivalencia
-showTerm (Or (Var x) (Var y)) = showTerm(Var x) ++ " !<==> " ++ showTerm(Var y)
-showTerm (Or (Var x) t) = showTerm(Var x) ++ " !<==> (" ++ showTerm(t) ++ ")"
-showTerm (Or t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " !<==> " ++ showTerm(Var x)
-showTerm (Or t1 t2) = "(" ++ showTerm t1 ++ ") !<==> (" ++ showTerm t2 ++ ")"
+showTerm (Inequ (Var x) (Var y)) = showTerm(Var x) ++ " !<==> " ++ showTerm(Var y)
+showTerm (Inequ (Var x) t) = showTerm(Var x) ++ " !<==> (" ++ showTerm(t) ++ ")"
+showTerm (Inequ t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " !<==> " ++ showTerm(Var x)
+showTerm (Inequ t1 t2) = "(" ++ showTerm t1 ++ ") !<==> (" ++ showTerm t2 ++ ")"
 
 instance Show Term where show t = showTerm t
 
@@ -192,4 +238,3 @@ lambda :: ()
 lambda = ()
 
 -- Funciones del sistema
-
