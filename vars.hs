@@ -274,3 +274,5 @@ instantiate (Equivalent t1 t2) (Simple (Var x) tsust) = Equivalent (sust t1 (Sim
 instantiate (Equivalent t1 t2) (Tup2 (tsust1, Simple (Var x) tsust2, (Var y))) = Equivalent (sust t1 (Tup2 (tsust1, Simple (Var x) tsust2, (Var y)))) (sust t2 (Tup2 (tsust1, Simple (Var x) tsust2, (Var y))))
 instantiate (Equivalent t1 t2) (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z))) = Equivalent (sust t1 (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z)))) (sust t2 (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z))))
 
+leibniz :: Equation -> Term -> Term -> Equation
+leibniz (Equivalent e1 e2) e (Var z) = (Equivalent (sust e (Simple (Var z) e1)) (sust e (Simple (Var z) e2)))
