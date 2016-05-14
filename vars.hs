@@ -8,6 +8,8 @@
 --			- Douglas Torres   #11-11027
 --			- Roberto Camara   #11-10235
 
+import Theorems
+
 data Term = Var Char | Neg Term | And Term Term | Or Term Term | Impl Term Term | Equ Term Term | Inequ Term Term | Constant String
 data Equation = Equivalent Term Term 
 data Sust = Simple Term Term | Tup2 (Term, Sust, Term) | Tup3 (Term, Term, Sust, Term, Term)
@@ -276,3 +278,6 @@ instantiate (Equivalent t1 t2) (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Va
 
 leibniz :: Equation -> Term -> Term -> Equation
 leibniz (Equivalent e1 e2) e (Var z) = (Equivalent (sust e (Simple (Var z) e1)) (sust e (Simple (Var z) e2)))
+
+infer :: Float -> Equation -> Sust -> Term -> Term -> Equation
+infer 
