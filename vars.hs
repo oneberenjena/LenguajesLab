@@ -59,6 +59,7 @@ class Sustituible s where
 instance Sustituible Sust where
 	-- Sustitucion simple a una variable
 	sust (Var x) (Simple (Var ss) t) = abstraer (Var ss) (Var x) t
+	sust (Constant tf) (Simple (Var ss) t) = (Constant tf)
 	sust (Neg t1) (Simple (Var ss) t) = (Neg (sust t1 (Simple (Var ss) t)))
 	sust (Or t1 t2) (Simple (Var ss) t) = (Or (sust t1 (Simple (Var ss) t)) (sust t2 (Simple (Var ss) t)))
 	sust (And t1 t2) (Simple (Var ss) t) = (And (sust t1 (Simple (Var ss) t)) (sust t2 (Simple (Var ss) t)))
@@ -68,6 +69,7 @@ instance Sustituible Sust where
 	
 	-- Sustitucion paralela a dos variables
 	sust (Var x) (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))) = if ss1 == x then sust (Var x) (Simple (Var ss1) t1) else sust (Var x) (Simple (Var ss2) t2)	
+	sust (Constant tf) (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))) = (Constant tf)
 	sust (Neg x) (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))) = (Neg (sust x (Tup2 (t1, Simple (Var ss1) t2, (Var ss2)))))	
 	sust (Or x1 x2) (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))) = (Or (sust x1 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2)))) (sust x2 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))))) 
 	sust (And x1 x2) (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))) = (And (sust x1 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2)))) (sust x2 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))))) 
@@ -77,6 +79,7 @@ instance Sustituible Sust where
 
 	-- Sustitucion paralela a tres variables
 	sust (Var x) (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) = if x == ss1 then sust (Var x) (Simple (Var ss1) t1) else if x == ss2 then sust (Var x) (Simple (Var ss2) t2) else sust (Var x) (Simple (Var ss3) t3) 
+	sust (Constant tf) (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) = (Constant tf)
 	sust (Neg x) (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) =  (Neg (sust x (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))))
 	sust (Or x1 x2) (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) = (Or (sust x1 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))) (sust x2 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))))
 	sust (And x1 x2) (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) = (And (sust x1 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))) (sust x2 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))))
@@ -278,7 +281,7 @@ lambda = ()
 -- Devuelve una ecuacion de tipo Equivalent e1 e2
 -- Donde e1 y e2 fueron sustituidos con la sutitucion dada
 instantiate :: Equation -> Sust -> Equation
-instantiate (Equivalent t1 t2) (Simple (Var x) tsust) = Equivalent (sust t1 (Simple (Var x) tsust)) (sust t2 (Simple (Var x) tsust))
+instantiate (Equivalent t1 t2) (Simple (Var x) tsust) = (Equivalent (sust t1 (Simple (Var x) tsust)) (sust t2 (Simple (Var x) tsust)))
 instantiate (Equivalent t1 t2) (Tup2 (tsust1, Simple (Var x) tsust2, (Var y))) = Equivalent (sust t1 (Tup2 (tsust1, Simple (Var x) tsust2, (Var y)))) (sust t2 (Tup2 (tsust1, Simple (Var x) tsust2, (Var y))))
 instantiate (Equivalent t1 t2) (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z))) = Equivalent (sust t1 (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z)))) (sust t2 (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z))))
 
@@ -290,12 +293,10 @@ instantiate (Equivalent t1 t2) (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Va
 leibniz :: Equation -> Term -> Term -> Equation
 leibniz (Equivalent e1 e2) e (Var z) = (Equivalent (sust e (Simple (Var z) e1)) (sust e (Simple (Var z) e2)))
 
-
 infer :: Float -> Equation -> Sust -> Term -> Term -> Equation
 infer n (Equivalent e1 e2) sus (Var z) e = inference (instantiate (prop n) sus) (Equivalent e1 e2) (Var z) e
 	where
 		inference (Equivalent eX eY) (Equivalent e1 e2) (Var z) e =  leibniz (Equivalent eX eY) e (Var z)
-
 
 ---------------------------------------------------------
 -- ESTO IRA AQUI DE MOMENTO PORQUE NO SE HACER MODULOS --
