@@ -12,6 +12,8 @@ data Term = Var Char | Neg Term | And Term Term | Or Term Term | Impl Term Term 
 data Equation = Equivalent Term Term 
 data Sust = Simple Term Term | Tup2 (Term, Sust, Term) | Tup3 (Term, Term, Sust, Term, Term)
 
+instance Eq Term where
+	(Var x) == (Var y) = x == y 
 
 -- Esta funcion lambda es la identidad, dado un elemento devuelve el mismo elemento
 ident = \x -> x
@@ -53,11 +55,32 @@ class Sustituible s where
 -- Se asocia el comportamiento de un objeto Sust en la clase sustituible para
 -- la funcion sust.
 instance Sustituible Sust where
-	sust t1 (Simple sustme t2) = abstraer sustme t1 t2
+	-- Sustitucion simple a una variable
+	sust (Var x) (Simple (Var ss) t) = abstraer (Var ss) (Var x) t
+	sust (Neg t1) (Simple (Var ss) t) = (Neg (sust t1 (Simple (Var ss) t)))
+	sust (Or t1 t2) (Simple (Var ss) t) = (Or (sust t1 (Simple (Var ss) t)) (sust t2 (Simple (Var ss) t)))
+	sust (And t1 t2) (Simple (Var ss) t) = (And (sust t1 (Simple (Var ss) t)) (sust t2 (Simple (Var ss) t)))
+	sust (Impl t1 t2) (Simple (Var ss) t) = (Impl (sust t1 (Simple (Var ss) t)) (sust t2 (Simple (Var ss) t)))
+	sust (Equ t1 t2) (Simple (Var ss) t) = (Equ (sust t1 (Simple (Var ss) t)) (sust t2 (Simple (Var ss) t)))
+	sust (Inequ t1 t2) (Simple (Var ss) t) = (Inequ (sust t1 (Simple (Var ss) t)) (sust t2 (Simple (Var ss) t)))
 	
-	-- REVISAR
-	sust tsust (Tup2 (t1, Simple sustme1 t2, sustme2)) = sust (sust tsust (Simple sustme1 t1)) (Simple sustme2 t2)
-	sust tsust (Tup3 (t1, t2, Simple sustme1 t3, sustme2, sustme3)) = sust (sust (sust tsust (Simple sustme1 t1)) (Simple sustme2 t2)) (Simple sustme3 t3)
+	-- Sustitucion paralela a dos variables
+	sust (Var x) (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))) = if ss1 == x then sust (Var x) (Simple (Var ss1) t1) else sust (Var x) (Simple (Var ss2) t2)	
+	sust (Neg x) (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))) = (Neg (sust x (Tup2 (t1, Simple (Var ss1) t2, (Var ss2)))))	
+	sust (Or x1 x2) (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))) = (Or (sust x1 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2)))) (sust x2 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))))) 
+	sust (And x1 x2) (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))) = (And (sust x1 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2)))) (sust x2 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))))) 
+	sust (Impl x1 x2) (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))) = (Impl (sust x1 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2)))) (sust x2 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))))) 
+	sust (Equ x1 x2) (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))) = (Equ (sust x1 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2)))) (sust x2 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))))) 
+	sust  (Inequ x1 x2) (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))) = (Inequ (sust x1 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2)))) (sust x2 (Tup2 (t1, Simple (Var ss1) t2, (Var ss2))))) 
+
+	-- Sustitucion paralela a tres variables
+	sust (Var x) (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) = if x == ss1 then sust (Var x) (Simple (Var ss1) t1) else if x == ss2 then sust (Var x) (Simple (Var ss2) t2) else sust (Var x) (Simple (Var ss3) t3) 
+	sust (Neg x) (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) =  (Neg (sust x (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))))
+	sust (Or x1 x2) (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) = (Or (sust x1 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))) (sust x2 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))))
+	sust (And x1 x2) (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) = (And (sust x1 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))) (sust x2 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))))
+	sust (Impl x1 x2) (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) = (Impl (sust x1 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))) (sust x2 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))))
+	sust (Equ x1 x2) (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) = (Equ (sust x1 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))) (sust x2 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))))
+	sust (Inequ x1 x2) (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) = (Inequ (sust x1 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))) (sust x2 (Tup3 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))))
 
 -- Declaracion de las variables de la 'a' a la 'z' como Vars
 a :: Term
@@ -191,8 +214,8 @@ term1 =: term2 = Simple term2 term1
 showTerm :: Term -> String
 showTerm (Var x) = x:[]
 showTerm (Constant bool) = bool 
-showTerm (Neg (Var x)) = "¬" ++ showTerm(Var x)
-showTerm (Neg t) = "¬(" ++ showTerm(t) ++ ")"
+showTerm (Neg (Var x)) = "neg(" ++ showTerm(Var x) ++ ")"
+showTerm (Neg t) = "neg(" ++ showTerm(t) ++ ")"
 
 -- Conjuncion
 showTerm (And (Var x) (Var y)) = showTerm(Var x) ++ " /\\ " ++ showTerm(Var y)
@@ -224,7 +247,13 @@ showTerm (Inequ (Var x) t) = showTerm(Var x) ++ " !<==> (" ++ showTerm(t) ++ ")"
 showTerm (Inequ t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " !<==> " ++ showTerm(Var x)
 showTerm (Inequ t1 t2) = "(" ++ showTerm t1 ++ ") !<==> (" ++ showTerm t2 ++ ")"
 
+-- Equivalencia de terminos ===
+showEquation :: Equation -> String
+showEquation (Equivalent t1 t2) = showTerm(t1) ++ " === " ++ showTerm(t2)
+
+-- Instanciamos los tipos de datos en la clase Show
 instance Show Term where show t = showTerm t
+instance Show Equation where show e = showEquation e
 
 -- Funciones dummy
 statement :: ()
@@ -240,3 +269,8 @@ lambda :: ()
 lambda = ()
 
 -- Funciones del sistema
+instantiate :: Equation -> Sust -> Equation
+instantiate (Equivalent t1 t2) (Simple (Var x) tsust) = Equivalent (sust t1 (Simple (Var x) tsust)) (sust t2 (Simple (Var x) tsust))
+instantiate (Equivalent t1 t2) (Tup2 (tsust1, Simple (Var x) tsust2, (Var y))) = Equivalent (sust t1 (Tup2 (tsust1, Simple (Var x) tsust2, (Var y)))) (sust t2 (Tup2 (tsust1, Simple (Var x) tsust2, (Var y))))
+instantiate (Equivalent t1 t2) (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z))) = Equivalent (sust t1 (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z)))) (sust t2 (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z))))
+
