@@ -8,7 +8,7 @@
 --			- Douglas Torres   #11-11027
 --			- Roberto Camara   #11-10235
 
-import Theorems
+--import Theorems
 
 data Term = Var Char | Neg Term | And Term Term | Or Term Term | Impl Term Term | Equ Term Term | Inequ Term Term | Constant String
 data Equation = Equivalent Term Term 
@@ -203,6 +203,7 @@ term1 !<==> term2 = Inequ term1 term2
 
 -- Operador Equivalencia de terminos, que representa la equivalencia logica
 -- No usa precedencia ya que no devuelve un termino operable sino un ecuacion
+infixl 2 ===
 (===) :: Term -> Term -> Equation
 term1 === term2 = Equivalent term1 term2
 
@@ -271,13 +272,41 @@ lambda :: ()
 lambda = ()
 
 -- Funciones del sistema
+
+-- instantiate 
+-- Recibe una ecuacion y una sustitucion (simple o a dos o tres terminos)
+-- Devuelve una ecuacion de tipo Equivalent e1 e2
+-- Donde e1 y e2 fueron sustituidos con la sutitucion dada
 instantiate :: Equation -> Sust -> Equation
 instantiate (Equivalent t1 t2) (Simple (Var x) tsust) = Equivalent (sust t1 (Simple (Var x) tsust)) (sust t2 (Simple (Var x) tsust))
 instantiate (Equivalent t1 t2) (Tup2 (tsust1, Simple (Var x) tsust2, (Var y))) = Equivalent (sust t1 (Tup2 (tsust1, Simple (Var x) tsust2, (Var y)))) (sust t2 (Tup2 (tsust1, Simple (Var x) tsust2, (Var y))))
 instantiate (Equivalent t1 t2) (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z))) = Equivalent (sust t1 (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z)))) (sust t2 (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z))))
 
+-- leibniz
+-- Recibe una ecuacion de tipo Equivalent eX eY, un termino E y una variable z
+-- Devuelve una ecuacion de tipo Equivalent e1 e2 
+-- Donde e1 y e2 resultan de aplicarle al termino E una sustitucion donde
+-- la variable que indique Var z sera sustituida por eX y eY respectivamente 
 leibniz :: Equation -> Term -> Term -> Equation
 leibniz (Equivalent e1 e2) e (Var z) = (Equivalent (sust e (Simple (Var z) e1)) (sust e (Simple (Var z) e2)))
 
+
 infer :: Float -> Equation -> Sust -> Term -> Term -> Equation
-infer 
+infer n (Equivalent e1 e2) sus (Var z) e = inference (instantiate (prop n) sus) (Equivalent e1 e2) (Var z) e
+	where
+		inference (Equivalent eX eY) (Equivalent e1 e2) (Var z) e =  leibniz (Equivalent eX eY) e (Var z)
+
+
+---------------------------------------------------------
+-- ESTO IRA AQUI DE MOMENTO PORQUE NO SE HACER MODULOS --
+---------------------------------------------------------
+prop :: Float -> Equation 
+prop num
+  | num == 3.1  = (p <==> q) <==> r === p <==> (q <==> r)
+  | num == 3.2  = (p <==> q) === (q <==> p)
+  | num == 3.3  = p <==> p === true
+  | num == 3.4  = p === p <==> true
+  | otherwise = error "The statement doesn't exists"
+---------------------------------------------------------
+---------------------------------------------------------
+---------------------------------------------------------
