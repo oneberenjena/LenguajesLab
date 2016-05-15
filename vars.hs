@@ -14,7 +14,28 @@ data Equation = Equivalent Term Term
 data Sust = Simple Term Term | Tup2 (Term, Sust, Term) | Tup3 (Term, Term, Sust, Term, Term)
 
 instance Eq Term where
-	(Var x) == (Var y) = x == y 
+	(Var x) == (Var y) = x == y
+	(And t1 t2) == (And t3 t4) = t1 == t3 &&  t2 == t4
+	(And t1 t2) == t = False
+	t == (And t1 t2) = False
+	(Or t1 t2) == (Or t3 t4) = t1 == t3 &&  t2 == t4
+	(Or t1 t2) == t = False
+	t == (Or t1 t2) = False
+	(Impl t1 t2) == (Impl t3 t4) = t1 == t3 &&  t2 == t4
+	(Impl t1 t2) == t = False
+	t == (Impl t1 t2) = False
+	(Equ t1 t2) == (Equ t3 t4) = t1 == t3 &&  t2 == t4
+	(Equ t1 t2) == t = False
+	t == (Equ t1 t2) = False
+	(Inequ t1 t2) == (Inequ t3 t4) = t1 == t3 &&  t2 == t4
+	(Inequ t1 t2) == t = False
+	t == (Inequ t1 t2) = False
+	(Neg t1) == (Neg t2) = t1 == t2
+	t == (Neg t2) = False
+	(Neg t1) == t = False
+	(Constant tf1) == (Constant tf2) = tf1 == tf2
+	(Constant tf) == t = False
+	t == (Constant tf) = False
 
 -- Esta funcion lambda es la identidad, dado un elemento devuelve el mismo elemento
 ident = \x -> x
@@ -267,6 +288,7 @@ instance Show Term where show t = showTerm t
 instance Show Equation where show e = showEquation e
 instance Show Sust where show s = showSust s
 
+
 -- Funciones dummy
 statement :: ()
 statement = ()
@@ -287,9 +309,21 @@ lambda = ()
 -- Devuelve una ecuacion de tipo Equivalent e1 e2
 -- Donde e1 y e2 fueron sustituidos con la sutitucion dada
 instantiate :: Equation -> Sust -> Equation
-instantiate (Equivalent t1 t2) (Simple (Var x) tsust) = (Equivalent (sust t1 (Simple (Var x) tsust)) (sust t2 (Simple (Var x) tsust)))
-instantiate (Equivalent t1 t2) (Tup2 (tsust1, Simple (Var x) tsust2, (Var y))) = Equivalent (sust t1 (Tup2 (tsust1, Simple (Var x) tsust2, (Var y)))) (sust t2 (Tup2 (tsust1, Simple (Var x) tsust2, (Var y))))
-instantiate (Equivalent t1 t2) (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z))) = Equivalent (sust t1 (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z)))) (sust t2 (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Var y), (Var z))))
+instantiate (Equivalent t1 t2) (Simple (Var x) tsust) = equ
+	where
+		sus1 = sust t1 (Simple (Var x) tsust)
+		sus2 = sust t2 (Simple (Var x) tsust)
+		equ = Equivalent sus1 sus2
+instantiate (Equivalent t1 t2) (Tup2 (ts1, Simple (Var x) ts2, (Var y))) = equ
+	where
+		sus1 = sust t1 (Tup2 (ts1, Simple (Var x) ts2, (Var y)))
+		sus2 = sust t2 (Tup2 (ts1, Simple (Var x) ts2, (Var y)))
+		equ = Equivalent sus1 sus2
+instantiate (Equivalent t1 t2) (Tup3 (ts1, ts2, Simple (Var x) ts3, (Var y), (Var z))) = equ 
+	where
+		sus1 = sust t1 (Tup3 (ts1, ts2, Simple (Var x) ts3, (Var y), (Var z)))
+		sus2 = sust t2 (Tup3 (ts1, ts2, Simple (Var x) ts3, (Var y), (Var z)))
+		equ = Equivalent sus1 sus2
 
 -- leibniz
 -- Recibe una ecuacion de tipo Equivalent eX eY, un termino E y una variable z
@@ -297,12 +331,43 @@ instantiate (Equivalent t1 t2) (Tup3 (tsust1, tsust2, Simple (Var x) tsust3, (Va
 -- Donde e1 y e2 resultan de aplicarle al termino E una sustitucion donde
 -- la variable que indique Var z sera sustituida por eX y eY respectivamente 
 leibniz :: Equation -> Term -> Term -> Equation
-leibniz (Equivalent e1 e2) e (Var z) = (Equivalent (sust e (Simple (Var z) e1)) (sust e (Simple (Var z) e2)))
-
-infer :: Float -> Equation -> Sust -> Term -> Term -> Equation
-infer n (Equivalent e1 e2) sus (Var z) e = inference (instantiate (prop n) sus) (Equivalent e1 e2) (Var z) e
+leibniz (Equivalent e1 e2) exp (Var z) = (Equivalent sus1 sus2)
 	where
-		inference (Equivalent eX eY) (Equivalent e1 e2) (Var z) e =  leibniz (Equivalent eX eY) e (Var z)
+		sus1 = sust exp (Simple (Var z) e1)
+		sus2 = sust exp (Simple (Var z) e2)
+-- Inferencia
+-- Recibe un float representando a un numero de un teorema
+-- Una sustitucion para ese teorema
+-- Una variable z
+-- Un termino exp
+-- Retorna la ecuacion que representa aplicar la regla de leibniz a la 
+-- expresion con el teorema teorema como X == Y
+infer :: Float -> Sust -> Term -> Term -> Equation
+infer n sus (Var z) exp = leibToTh
+	where
+		leib = (\eq -> leibniz eq exp (Var z))
+		th = prop n
+		leibToTh = leib $ instantiate th sus 
+-- Step
+-- Representa la deduccion de un paso, recibe
+-- un termino1 que es el lado izquierdo de una ecuacion antes de realizar
+-- una inferencia, y los mismos argumentos de infer
+-- Retorna el lado de la ecuacion resultante a aplicar el teorema dado a
+-- la expresion ex
+step :: Term -> Float -> Sust -> Term -> Term -> Term
+step termino1 n sus (Var z) exp = check termino1 $ checkinf
+	where
+		checkinf =
+			if (sust exp (Simple (Var z) termino1)) == termino1 then
+				infer n sus (Var z) exp
+			else
+				error "invalid inference rule"
+		check t1 (Equivalent t2izq t2der) = 
+			if t1 == t2izq then 
+				t2der 
+			else if t1 == t2der then 
+				t2izq else error "Proof failed"
+
 
 ---------------------------------------------------------
 -- ESTO IRA AQUI DE MOMENTO PORQUE NO SE HACER MODULOS --
