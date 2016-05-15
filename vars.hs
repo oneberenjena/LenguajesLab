@@ -9,7 +9,6 @@
 --			- Roberto Camara   #11-10235
 
 --import Theorems
-
 data Term = Var Char | Neg Term | And Term Term | Or Term Term | Impl Term Term | Equ Term Term | Inequ Term Term | Constant String
 data Equation = Equivalent Term Term 
 data Sust = Simple Term Term | Tup2 (Term, Sust, Term) | Tup3 (Term, Term, Sust, Term, Term)
@@ -242,7 +241,7 @@ showTerm (Impl t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " ==> " ++ showTerm(Var
 showTerm (Impl t1 t2) = "(" ++ showTerm t1 ++ ") ==> (" ++ showTerm t2 ++ ")"
 
 -- Equivalencia
-showTerm (Equ (Var x) (Var y)) = showTerm(Var x) ++ " <==>" ++ showTerm(Var y)
+showTerm (Equ (Var x) (Var y)) = showTerm(Var x) ++ " <==> " ++ showTerm(Var y)
 showTerm (Equ (Var x) t) = showTerm(Var x) ++ " <==> (" ++ showTerm(t) ++ ")"
 showTerm (Equ t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " <==> " ++ showTerm(Var x)
 showTerm (Equ t1 t2) = "(" ++ showTerm t1 ++ ") <==> (" ++ showTerm t2 ++ ")"
@@ -257,9 +256,16 @@ showTerm (Inequ t1 t2) = "(" ++ showTerm t1 ++ ") !<==> (" ++ showTerm t2 ++ ")"
 showEquation :: Equation -> String
 showEquation (Equivalent t1 t2) = showTerm(t1) ++ " === " ++ showTerm(t2)
 
+-- Sustitucion textual
+showSust :: Sust -> String
+showSust (Simple (Var x) t) = showTerm(t) ++ " =: " ++ showTerm(Var x)
+showSust (Tup2 (t1, Simple (Var x) t2, (Var y))) = "("++ showTerm(t1) ++ " , " ++ showTerm(t2) ++ " =: " ++ showTerm(Var x) ++ " , " ++ showTerm(Var y) ++ ")"
+showSust (Tup3 (t1, t2, Simple (Var x) t3, (Var y), (Var z))) = "(" ++ showTerm(t1) ++ " , " ++ showTerm(t2) ++ " , " ++showTerm(t3) ++ " =: " ++showTerm(Var x) ++ " , " ++ showTerm(Var y) ++ " , " ++ showTerm(Var z) ++ ")" 
+
 -- Instanciamos los tipos de datos en la clase Show
 instance Show Term where show t = showTerm t
 instance Show Equation where show e = showEquation e
+instance Show Sust where show s = showSust s
 
 -- Funciones dummy
 statement :: ()
