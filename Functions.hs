@@ -4,7 +4,7 @@
 -- Archivo: vars.hs 
 -- Descripcion: Contiene las definiciones de funciones para el uso del
 -- asistente de pruebas
--- Ultima modificacion: 15/05/16
+-- Ultima modificacion: 16/05/16
 -- Autores: - Benjamin Amos    #12-10240
 --			- Douglas Torres   #11-11027
 --			- Roberto Camara   #11-10235
@@ -226,6 +226,11 @@ step termino1 n sus (Var z) exp = check termino1 theorem
 				t2izq 
 			else error "invalid inference rule"
 
+-- Statement
+-- Recibe los mismos parametros de step para realizarlo con el Float dado
+-- y un termino que representa el lado izquierdo de una ecuacion.
+-- Devuelve por IO el termino resultante de aplicar step al lado izquierdo
+-- ademas del hint del cual procede este termino
 statement :: (Sustituible s, Show s) => Float -> String -> s -> String -> String -> Term -> Term -> Term -> IO Term
 statement = \n with sus using lambda varz exp t1 -> 
 	do 
@@ -233,13 +238,21 @@ statement = \n with sus using lambda varz exp t1 ->
 		putStrLn $ "=== <statement " ++ show n ++ " " ++ with ++ " " ++ show sus ++ " " ++ using ++ " " ++ lambda ++" " ++ show varz ++ "." ++ show exp ++">"
 		putStrLn $ show termTemporal
 		return $ termTemporal
-		
+
+-- Proof
+-- Recibe una ecuacion que representa un teorema.
+-- Imprime en pantalla el teorema para luego devolver
+--	el lado izquierdo del mismo por IO
 proof :: Equation -> IO Term
 proof theorem@(Equivalent t1 t2) = 
 	do
 		putStrLn $ "prooving " ++ show theorem ++ "\n"
 		return t1 
 
+-- Done
+-- Recibe una ecuacion que es el teorema que recibe Proof y un termino
+-- Verifica que el lado derecho de ese teorema sea igual al termino dado
+-- para imprimir un mensaje en pantalla dependiendo de su resultado
 done :: Equation -> Term -> IO ()
 done = \theorem@(Equivalent t1 t2) termder -> 
 											if termder == t2 then
