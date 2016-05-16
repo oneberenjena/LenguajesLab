@@ -235,7 +235,7 @@ infixl 2 ===
 term1 === term2 = Equivalent term1 term2
 
 -- Operador sustitucion textual
-infixl 6 =:
+infixl 1 =:
 (=:) :: Term -> Term -> Sust
 term1 =: term2 = Simple term2 term1
 
@@ -374,16 +374,15 @@ done = \theorem@(Equivalent t1 t2) termder ->
 											else
 												putStrLn "\nproof failed"
 
-verify = let theorem = (p <==> p) <==> (q <==> q) === true in
+verify = let theorem = (p <==> q) <==> (q <==> p) === true in
          proof theorem
          >>=
-         statement 3.3 with (p =: p) using lambda z (z <==> (q <==> q))
+         statement 3.2 with (p =: p) using lambda z ((p <==> q) <==> z)
          >>=
-         statement 3.3 with (q =: p) using lambda z (true <==> z)
-         >>=
-         statement 3.3 with (true =: p) using lambda z (z)
+         statement 3.3 with (p <==> q =: p) using lambda z (z)
          >>=
          done theorem
+
 
 ---------------------------------------------------------
 -- ESTO IRA AQUI DE MOMENTO PORQUE NO SE HACER MODULOS --
