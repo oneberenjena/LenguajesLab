@@ -343,24 +343,46 @@ infer n sus (Var z) exp = leibToTh
 -- Retorna el lado de la ecuacion resultante a aplicar el teorema dado a
 -- la expresion exp
 step :: Sustituible s => Term -> Float -> s -> Term -> Term -> Term
-step termino1 n sus (Var z) exp = check termino1 $ checkinf
+step termino1 n sus (Var z) exp = check termino1 
 	where
-		checkinf =
-			if (sust exp (Simple (Var z) termino1)) == termino1 then
-				infer n sus (Var z) exp
-			else
-				error "invalid inference rule"
-		check t1 (Equivalent t2izq t2der) = 
-			if t1 == t2izq then 
+		check termino1 (Equivalent t2izq t2der) = 
+			if termino1 == t2izq then 
 				t2der 
-			else if t1 == t2der then 
-				t2izq else error "Proof failed"
+			else if termino1 == t2der then 
+				t2izq 
+			else error "Proof failed"
 
 statement :: (Sustituible s, Show s) => Float -> String -> s -> String -> String -> Term -> Term -> Term -> IO Term
 statement = \n with sus using lambda varz exp t1 -> 
 	do 
+		let termTemporal = step t1 n sus varz exp
 		putStrLn $ "=== <statement " ++ show n ++ " " ++ with ++ " " ++ show sus ++ " " ++ using ++ " " ++ lambda ++" " ++ show varz ++ "." ++ show exp ++">"
-		return $ step t1 n sus varz exp
+		putStrLn $ show termTemporal
+		return $ termTemporal
+		
+proof :: Equation -> IO Term
+proof theorem@(Equivalent t1 t2) = 
+	do
+		putStrLn $ "prooving " ++ show theorem ++ "\n"
+		return t1 
+
+done :: Equation -> Term -> IO ()
+done = \theorem@(Equivalent t1 t2) termder -> 
+											if termder == t2 then
+												putStrLn "proof succesfull"
+											else
+												putStrLn "proof failed"
+
+verify = let theorem = (p <==> q) <==> q === p in
+         proof theorem
+         >>=
+         statement 3.1 with (q =: r) using lambda z (z)
+         >>=
+         statement 3.3 with (q =: p) using lambda z (p <==> z)
+         >>=
+         statement 3.4 with (p =: p) using lambda z (z)
+         >>=
+         done theorem
 
 ---------------------------------------------------------
 -- ESTO IRA AQUI DE MOMENTO PORQUE NO SE HACER MODULOS --
