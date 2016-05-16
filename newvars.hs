@@ -343,12 +343,13 @@ infer n sus (Var z) exp = leibToTh
 -- Retorna el lado de la ecuacion resultante a aplicar el teorema dado a
 -- la expresion exp
 step :: Sustituible s => Term -> Float -> s -> Term -> Term -> Term
-step termino1 n sus (Var z) exp = check termino1 
+step termino1 n sus (Var z) exp = check termino1 theorem
 	where
-		check termino1 (Equivalent t2izq t2der) = 
-			if termino1 == t2izq then 
+		theorem = infer n sus (Var z) exp
+		check t1 (Equivalent t2izq t2der) = 
+			if t1 == t2izq then 
 				t2der 
-			else if termino1 == t2der then 
+			else if t1 == t2der then 
 				t2izq 
 			else error "Proof failed"
 
@@ -369,18 +370,18 @@ proof theorem@(Equivalent t1 t2) =
 done :: Equation -> Term -> IO ()
 done = \theorem@(Equivalent t1 t2) termder -> 
 											if termder == t2 then
-												putStrLn "proof succesfull"
+												putStrLn "\nproof succesfull"
 											else
-												putStrLn "proof failed"
+												putStrLn "\nproof failed"
 
-verify = let theorem = (p <==> q) <==> q === p in
+verify = let theorem = (p <==> p) <==> (q <==> q) === true in
          proof theorem
          >>=
-         statement 3.1 with (q =: r) using lambda z (z)
+         statement 3.3 with (p =: p) using lambda z (z <==> (q <==> q))
          >>=
-         statement 3.3 with (q =: p) using lambda z (p <==> z)
+         statement 3.3 with (q =: p) using lambda z (true <==> z)
          >>=
-         statement 3.4 with (p =: p) using lambda z (z)
+         statement 3.3 with (true =: p) using lambda z (z)
          >>=
          done theorem
 
