@@ -291,14 +291,14 @@ instance Show Sust where show s = showSust s
 
 
 -- Funciones dummy
-with :: ()
-with = ()
+with :: String
+with = "with"
 
-using :: ()
-using = ()
+using :: String
+using = "using"
 
-lambda :: ()
-lambda = ()
+lambda :: String
+lambda = "lambda"
 
 -- Funciones del sistema
 
@@ -311,7 +311,7 @@ instantiate (Equivalent t1 t2) sus = Equivalent sus1 sus2
 	where
 		sus1 = sust t1 sus
 		sus2 = sust t2 sus
-		
+
 -- leibniz
 -- Recibe una ecuacion de tipo Equivalent eX eY, un termino E y una variable z
 -- Devuelve una ecuacion de tipo Equivalent e1 e2 
@@ -356,11 +356,11 @@ step termino1 n sus (Var z) exp = check termino1 $ checkinf
 			else if t1 == t2der then 
 				t2izq else error "Proof failed"
 
---statement :: Term -> Float -> () -> Sust -> () -> () -> Term -> Term -> IO Term
---statement termino1 n with sus using lambda (Var z) exp = 
---	do 	putStrLn $ "statement " ++ show n ++ " with " ++ show sus ++ " using lambda " ++ show (Var z) ++ "." ++ show exp 
---		return $ step termino1 n sus (Var z) exp
-
+statement :: (Sustituible s, Show s) => Float -> String -> s -> String -> String -> Term -> Term -> Term -> IO Term
+statement = \n with sus using lambda varz exp t1 -> 
+	do 
+		putStrLn $ "=== <statement " ++ show n ++ " " ++ with ++ " " ++ show sus ++ " " ++ using ++ " " ++ lambda ++" " ++ show varz ++ "." ++ show exp ++">"
+		return $ step t1 n sus varz exp
 
 ---------------------------------------------------------
 -- ESTO IRA AQUI DE MOMENTO PORQUE NO SE HACER MODULOS --
