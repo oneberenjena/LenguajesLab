@@ -1,19 +1,19 @@
 {-# LANGUAGE FlexibleInstances #-}
 -- Laboratorio de Lenguajes de Programacion I
 -- Proyecto I
--- Archivo: vars.hs 
+-- Archivo: Functions.hs 
 -- Descripcion: Contiene las definiciones de funciones para el uso del
 -- asistente de pruebas
--- Ultima modificacion: 16/05/16
+-- Ultima modificacion: 20/05/16
 -- Autores: - Benjamin Amos    #12-10240
 --			- Douglas Torres   #11-11027
 --			- Roberto Camara   #11-10235
 
 module Functions where
-import Exportar
+import Term
 import Theorems
 
-
+-- Implementando la equivalencia de terminos
 instance Eq Term where
 	(Var x) == (Var y) = x == y
 	(And t1 t2) == (And t3 t4) = t1 == t3 &&  t2 == t4
@@ -80,36 +80,36 @@ class Sustituible s where
 
 -- Sustitucion simple a una variable
 instance Sustituible Sust where
-	sust (Var x) (Simple (Var ss) t) = abstraer (Var ss) (Var x) t
-	sust (Constant tf) (Simple (Var ss) t) = (Constant tf)
-	sust (Neg t1) (Simple (Var ss) t) = (Neg (sust t1 (Simple (Var ss) t)))
-	sust (Or t1 t2) (Simple (Var ss) t) = (Or (sust t1 (Simple (Var ss) t)) (sust t2 (Simple (Var ss) t)))
-	sust (And t1 t2) (Simple (Var ss) t) = (And (sust t1 (Simple (Var ss) t)) (sust t2 (Simple (Var ss) t)))
-	sust (Impl t1 t2) (Simple (Var ss) t) = (Impl (sust t1 (Simple (Var ss) t)) (sust t2 (Simple (Var ss) t)))
-	sust (Equ t1 t2) (Simple (Var ss) t) = (Equ (sust t1 (Simple (Var ss) t)) (sust t2 (Simple (Var ss) t)))
-	sust (Inequ t1 t2) (Simple (Var ss) t) = (Inequ (sust t1 (Simple (Var ss) t)) (sust t2 (Simple (Var ss) t)))
+	sust (Var x) (Simple (Var s) t) = abstraer (Var s) (Var x) t
+	sust (Constant tf) (Simple (Var s) t) = (Constant tf)
+	sust (Neg t1) (Simple (Var s) t) = (Neg (sust t1 (Simple (Var s) t)))
+	sust (Or t1 t2) (Simple (Var s) t) = (Or (sust t1 (Simple (Var s) t)) (sust t2 (Simple (Var s) t)))
+	sust (And t1 t2) (Simple (Var s) t) = (And (sust t1 (Simple (Var s) t)) (sust t2 (Simple (Var s) t)))
+	sust (Impl t1 t2) (Simple (Var s) t) = (Impl (sust t1 (Simple (Var s) t)) (sust t2 (Simple (Var s) t)))
+	sust (Equ t1 t2) (Simple (Var s) t) = (Equ (sust t1 (Simple (Var s) t)) (sust t2 (Simple (Var s) t)))
+	sust (Inequ t1 t2) (Simple (Var s) t) = (Inequ (sust t1 (Simple (Var s) t)) (sust t2 (Simple (Var s) t)))
 
 -- Sustitucion paralela a dos variables
 instance Sustituible (Term, Sust, Term) where
-	sust (Var x) (t1, Simple (Var ss1) t2, (Var ss2)) = if ss1 == x then sust (Var x) (Simple (Var ss1) t1) else sust (Var x) (Simple (Var ss2) t2)	
-	sust (Constant tf) (t1, Simple (Var ss1) t2, (Var ss2)) = Constant tf
-	sust (Neg x) (t1, Simple (Var ss1) t2, (Var ss2)) = Neg (sust x (t1, Simple (Var ss1) t2, (Var ss2)))	
-	sust (Or x1 x2) (t1, Simple (Var ss1) t2, (Var ss2)) = Or (sust x1 (t1, Simple (Var ss1) t2, (Var ss2))) (sust x2 (t1, Simple (Var ss1) t2, (Var ss2))) 
-	sust (And x1 x2) (t1, Simple (Var ss1) t2, (Var ss2)) = And (sust x1 (t1, Simple (Var ss1) t2, (Var ss2))) (sust x2 (t1, Simple (Var ss1) t2, (Var ss2))) 
-	sust (Impl x1 x2) (t1, Simple (Var ss1) t2, (Var ss2)) = Impl (sust x1 (t1, Simple (Var ss1) t2, (Var ss2))) (sust x2 (t1, Simple (Var ss1) t2, (Var ss2))) 
-	sust (Equ x1 x2) (t1, Simple (Var ss1) t2, (Var ss2)) = Equ (sust x1 (t1, Simple (Var ss1) t2, (Var ss2))) (sust x2 (t1, Simple (Var ss1) t2, (Var ss2))) 
-	sust  (Inequ x1 x2) (t1, Simple (Var ss1) t2, (Var ss2)) = Inequ (sust x1 (t1, Simple (Var ss1) t2, (Var ss2))) (sust x2 (t1, Simple (Var ss1) t2, (Var ss2))) 
+	sust (Var x) (t1, Simple (Var s1) t2, (Var s2)) = if s1 == x then sust (Var x) (Simple (Var s1) t1) else sust (Var x) (Simple (Var s2) t2)	
+	sust (Constant tf) (t1, Simple (Var s1) t2, (Var s2)) = Constant tf
+	sust (Neg x) (t1, Simple (Var s1) t2, (Var s2)) = Neg (sust x (t1, Simple (Var s1) t2, (Var s2)))	
+	sust (Or x1 x2) (t1, Simple (Var s1) t2, (Var s2)) = Or (sust x1 (t1, Simple (Var s1) t2, (Var s2))) (sust x2 (t1, Simple (Var s1) t2, (Var s2))) 
+	sust (And x1 x2) (t1, Simple (Var s1) t2, (Var s2)) = And (sust x1 (t1, Simple (Var s1) t2, (Var s2))) (sust x2 (t1, Simple (Var s1) t2, (Var s2))) 
+	sust (Impl x1 x2) (t1, Simple (Var s1) t2, (Var s2)) = Impl (sust x1 (t1, Simple (Var s1) t2, (Var s2))) (sust x2 (t1, Simple (Var s1) t2, (Var s2))) 
+	sust (Equ x1 x2) (t1, Simple (Var s1) t2, (Var s2)) = Equ (sust x1 (t1, Simple (Var s1) t2, (Var s2))) (sust x2 (t1, Simple (Var s1) t2, (Var s2))) 
+	sust (Inequ x1 x2) (t1, Simple (Var s1) t2, (Var s2)) = Inequ (sust x1 (t1, Simple (Var s1) t2, (Var s2))) (sust x2 (t1, Simple (Var s1) t2, (Var s2))) 
 
 -- Sustitucion paralela a tres variables
 instance Sustituible (Term, Term, Sust, Term, Term) where
-	sust (Var x) (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)) = if x == ss1 then sust (Var x) (Simple (Var ss1) t1) else if x == ss2 then sust (Var x) (Simple (Var ss2) t2) else sust (Var x) (Simple (Var ss3) t3) 
-	sust (Constant tf) (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)) = Constant tf
-	sust (Neg x) (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)) =  Neg (sust x (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))
-	sust (Or x1 x2) (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)) = Or (sust x1 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) (sust x2 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))
-	sust (And x1 x2) (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)) = And (sust x1 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) (sust x2 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))
-	sust (Impl x1 x2) (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)) = Impl (sust x1 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) (sust x2 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))
-	sust (Equ x1 x2) (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)) = Equ (sust x1 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) (sust x2 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))
-	sust (Inequ x1 x2) (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)) = Inequ (sust x1 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3))) (sust x2 (t1, t2, Simple (Var ss1) t3, (Var ss2), (Var ss3)))
+	sust (Var x) (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)) = if x == s1 then sust (Var x) (Simple (Var s1) t1) else if x == s2 then sust (Var x) (Simple (Var s2) t2) else sust (Var x) (Simple (Var s3) t3) 
+	sust (Constant tf) (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)) = Constant tf
+	sust (Neg x) (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)) =  Neg (sust x (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)))
+	sust (Or x1 x2) (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)) = Or (sust x1 (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3))) (sust x2 (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)))
+	sust (And x1 x2) (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)) = And (sust x1 (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3))) (sust x2 (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)))
+	sust (Impl x1 x2) (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)) = Impl (sust x1 (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3))) (sust x2 (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)))
+	sust (Equ x1 x2) (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)) = Equ (sust x1 (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3))) (sust x2 (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)))
+	sust (Inequ x1 x2) (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)) = Inequ (sust x1 (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3))) (sust x2 (t1, t2, Simple (Var s1) t3, (Var s2), (Var s3)))
 
 -- FORMA DE IMPRESION
 showTerm :: Term -> String
@@ -121,30 +121,45 @@ showTerm (Neg t) = "neg (" ++ showTerm(t) ++ ")"
 
 -- Conjuncion
 showTerm (And (Var x) (Var y)) = showTerm(Var x) ++ " /\\ " ++ showTerm(Var y)
+showTerm (And (Constant x) (Constant y)) = showTerm(Constant x) ++ " /\\ " ++ showTerm(Constant y)
+showTerm (And (Constant x) t) = showTerm(Constant x) ++ " /\\ " ++ showTerm(t)
+showTerm (And t (Constant y)) = showTerm(t) ++ " /\\ " ++ showTerm(Constant y)
 showTerm (And (Var x) t) = showTerm(Var x) ++ " /\\ (" ++ showTerm(t) ++ ")"
 showTerm (And t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " /\\ " ++ showTerm(Var x)
 showTerm (And t1 t2) = "(" ++ showTerm t1 ++ ") /\\ (" ++ showTerm t2 ++ ")"
 
 -- Disyuncion
 showTerm (Or (Var x) (Var y)) = showTerm(Var x) ++ " \\/ " ++ showTerm(Var y)
+showTerm (Or (Constant x) (Constant y)) = showTerm(Constant x) ++ " \\/ " ++ showTerm(Constant y)
+showTerm (Or (Constant x) t) = showTerm(Constant x) ++ " \\/ " ++ showTerm(t)
+showTerm (Or t (Constant y)) = showTerm(t) ++ " \\/ " ++ showTerm(Constant y)
 showTerm (Or (Var x) t) = showTerm(Var x) ++ " \\/ (" ++ showTerm(t) ++ ")"
 showTerm (Or t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " \\/ " ++ showTerm(Var x)
 showTerm (Or t1 t2) = "(" ++ showTerm t1 ++ ") \\/ (" ++ showTerm t2 ++ ")"
 
 -- Implicacion
 showTerm (Impl (Var x) (Var y)) = showTerm(Var x) ++ " ==> " ++ showTerm(Var y)
+showTerm (Impl (Constant x) (Constant y)) = showTerm(Constant x) ++ " ==> " ++ showTerm(Constant y)
+showTerm (Impl (Constant x) t) = showTerm(Constant x) ++ " ==> " ++ showTerm(t)
+showTerm (Impl t (Constant y)) = showTerm(t) ++ " ==> " ++ showTerm(Constant y)
 showTerm (Impl (Var x) t) = showTerm(Var x) ++ " ==> (" ++ showTerm(t) ++ ")"
 showTerm (Impl t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " ==> " ++ showTerm(Var x)
 showTerm (Impl t1 t2) = "(" ++ showTerm t1 ++ ") ==> (" ++ showTerm t2 ++ ")"
 
 -- Equivalencia
 showTerm (Equ (Var x) (Var y)) = showTerm(Var x) ++ " <==> " ++ showTerm(Var y)
+showTerm (Equ (Constant x) (Constant y)) = showTerm(Constant x) ++ " <==> " ++ showTerm(Constant y)
+showTerm (Equ (Constant x) t) = showTerm(Constant x) ++ " <==> " ++ showTerm(t)
+showTerm (Equ t (Constant y)) = showTerm(t) ++ " <==> " ++ showTerm(Constant y)
 showTerm (Equ (Var x) t) = showTerm(Var x) ++ " <==> (" ++ showTerm(t) ++ ")"
 showTerm (Equ t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " <==> " ++ showTerm(Var x)
 showTerm (Equ t1 t2) = "(" ++ showTerm t1 ++ ") <==> (" ++ showTerm t2 ++ ")"
 
 -- Inequivalencia
 showTerm (Inequ (Var x) (Var y)) = showTerm(Var x) ++ " !<==> " ++ showTerm(Var y)
+showTerm (Inequ (Constant x) (Constant y)) = showTerm(Constant x) ++ " !<==> " ++ showTerm(Constant y)
+showTerm (Inequ (Constant x) t) = showTerm(Constant x) ++ " !<==> " ++ showTerm(t)
+showTerm (Inequ t (Constant y)) = showTerm(t) ++ " !<==> " ++ showTerm(Constant y)
 showTerm (Inequ (Var x) t) = showTerm(Var x) ++ " !<==> (" ++ showTerm(t) ++ ")"
 showTerm (Inequ t (Var x)) = "(" ++ showTerm(t) ++ ")" ++ " !<==> " ++ showTerm(Var x)
 showTerm (Inequ t1 t2) = "(" ++ showTerm t1 ++ ") !<==> (" ++ showTerm t2 ++ ")"
@@ -165,13 +180,13 @@ instance Show Sust where show s = showSust s
 
 -- Funciones dummy
 with :: String
-with = "with"
+with = " with "
 
 using :: String
-using = "using"
+using = " using "
 
 lambda :: String
-lambda = "lambda"
+lambda = "lambda "
 
 -- Funciones del sistema
 
@@ -219,12 +234,10 @@ step :: Sustituible s => Term -> Float -> s -> Term -> Term -> Term
 step termino1 n sus (Var z) exp = check termino1 theorem
 	where
 		theorem = infer n sus (Var z) exp
-		check t1 (Equivalent t2izq t2der) = 
-			if t1 == t2izq then 
-				t2der 
-			else if t1 == t2der then 
-				t2izq 
-			else error "invalid inference rule"
+		check t1 (Equivalent t2izq t2der)  
+			| t1 == t2izq = t2der 
+			| t1 == t2der = t2izq 
+			| otherwise = error "invalid inference rule"
 
 -- Statement
 -- Recibe los mismos parametros de step para realizarlo con el Float dado
@@ -235,9 +248,9 @@ statement :: (Sustituible s, Show s) => Float -> String -> s -> String -> String
 statement = \n with sus using lambda varz exp t1 -> 
 	do 
 		let termTemporal = step t1 n sus varz exp
-		putStrLn $ "=== <statement " ++ show n ++ " " ++ with ++ " " ++ show sus ++ " " ++ using ++ " " ++ lambda ++" " ++ show varz ++ "." ++ show exp ++">"
+		putStrLn $ concat ["=== <statement ",show n,with,show sus,using,lambda,show varz," (",show exp,")>"]
 		putStrLn $ show termTemporal
-		return $ termTemporal
+		return termTemporal
 
 -- Proof
 -- Recibe una ecuacion que representa un teorema.
@@ -249,13 +262,14 @@ proof theorem@(Equivalent t1 t2) =
 		putStrLn $ "prooving " ++ show theorem ++ "\n"
 		return t1 
 
--- Done
+-- done
 -- Recibe una ecuacion que es el teorema que recibe Proof y un termino
 -- Verifica que el lado derecho de ese teorema sea igual al termino dado
 -- para imprimir un mensaje en pantalla dependiendo de su resultado
 done :: Equation -> Term -> IO ()
-done = \theorem@(Equivalent t1 t2) termder -> 
-											if termder == t2 then
-												putStrLn "\nproof succesfull"
-											else
-												putStrLn "\nproof failed"
+done = \(Equivalent t1 t2) termder -> 
+									if termder == t2 then
+										putStrLn "\nproof succesfull"
+									else
+										putStrLn "\nproof failed"
+
