@@ -57,6 +57,7 @@ bienEtiquetado(nodo(X,Lista)) :- writeln('Caso recursivo bienEtiquetado'),
 bienEtiquetado_Nodos([],Lnodos1,Lnodos1).
 
 bienEtiquetado_Nodos(nodo(X,[]),Lnodos,Lnodos1) :- writeln('Caso base bienEtiquetado_Nodos'),
+													writeln(Lnodos),
 													!,not(member(X,Lnodos)),
 													append([X],Lnodos,Lnodos2),
 													writeln('Esta es Lnodos'),
@@ -89,8 +90,10 @@ bienEtiquetado_Aristas(arista(X,nodo(Y,Hijos)),Laristas,Lnodos,W) :- !, writeln(
 											write(W),write(' '), write(X),write(' '), write(Y),write(' '), 
 											write(P),write(' '), write(Lnodos),write(' '), write(Laristas),
 											not(member(X,Laristas)),
-											append([X],Laristas,Laristas1),writeln(Hijos), 
-											bienEtiquetado_Nodos(nodo(Y,Hijos),Lnodos,Lnodos).
+											not(member(W,Lnodos)),
+											append([W],Lnodos,Lnodos1), writeln(Lnodos1),
+											append([X],Laristas,Laristas1), writeln(Laristas1), 
+											bienEtiquetado_Nodos(nodo(Y,Hijos),Lnodos1,Lnodos2).
 											%bienEtiquetado_Aristas([],Laristas,Laristas).
 
 bienEtiquetado_Aristas([Head|Tail],Laristas,Lnodos,W) :- writeln('Caso recursivo auxiliar bienEtiquetado_Aristas '), 
