@@ -1,19 +1,40 @@
-nodo(X,[]) :- write('nodo -- caso base '), writeln(X),
-				!,integer(X)>0.
+% Laboratorio de Lenguajes de Programacion I
+% Proyecto 2
+% Archivo: proyecto.pl 
+% Descripcion: Contiene los predicados del proyecto.
+% Ultima modificacion: 16/06/16
+% Autores: - Benjamin Amos    #12-10240
+%		   - Douglas Torres   #11-11027
+%		   - Roberto Camara   #11-10235
 
-nodo(X, [Head|Tail]) :- write('nodo -- caso recursivo '),writeln(X),
-					!,integer(X)>0,
-					Head,
-					nl,
-					auxiliar(Tail).
+% NOTA: ESTE PROYECTO FUE ESCRITO USANDO PREDICADOS BUILT-IN DE SWI-PROLOG.
 
+% Estructura de Nodo que es hoja, y sirve para la impresion del arbol.
+nodo(X,[]) :- !,integer(X)>0,
+				write('Etiqueta nodo: '), writeln(X),
+				writeln('Fin de rama').
+				
+% Estructura de Nodo recursivo, que sirve para la impresion del arbol.
+nodo(X, [Head|Tail]) :- !,integer(X)>0,
+						write('Etiqueta nodo: '),writeln(X),
+						Head,
+						auxiliar(Tail),
+						nl,
+						writeln('Regreso al nivel anterior a imprimir los hermanos.')
+						,nl.
+
+% Estructura de Nodo que sirve para capturar errores en la sintaxis de un nodo.
 nodo(_) :- !, writeln('Error: Nodo no cumple con la sintaxis requerida.'),
 			false.
 
-arista(X,Hijo) :- write('arista -- unico caso '), writeln(X),
-					!,integer(X)>0,
+% Estructura de Arista que actua de forma recursiva, y sirve para la impresion del arbol.
+arista(X,Hijo) :- !,integer(X)>0,
+					writeln('|'),
+					write('Etiqueta arista: '), writeln(X),
+					writeln('|'),
 					Hijo.
 
+% Estructura de Arista que sirve para capturar errores en la sintaxis de una arista.
 arista(_) :- !, writeln('Error: Arista no cumple con la sintaxis requerida.'),
 				false.
 
@@ -23,31 +44,32 @@ auxiliar([]) :- true.
 auxiliar([Head|Tail]) :- !,Head,
 						auxiliar(Tail).
 
-bienEtiquetado(nodo(X,[])) :- writeln('Caso base Num 1 bienEtiquetado '), 
-								(integer(X)=<0 -> writeln('Arbol no esta bien etiquetado: Etiqueta de nodo es menor o igual a 0.'), false);
+% Predicado bienEtiquetado para un caso base.
+bienEtiquetado(nodo(X,[])) :- (integer(X)=<0 -> writeln('Arbol no esta bien etiquetado: Etiqueta de nodo es menor o igual a 0.'), false);
 								!,integer(X)>0,
 								Lnodos = [],
 								Laristas = [],
 								append([X],Lnodos,Lnodos1),
-								writeln(Lnodos1),
-								writeln(Laristas).
+								writeln('Lista de nodos en el arbol'),
+								writeln(Lnodos1).
 
-bienEtiquetado(nodo(X,[arista(Y,nodo(Z,[]))])) :- !,writeln('Caso base Num 2 bienEtiquetado '),
-											not(X = Z),
-											P is abs(X-Z),
-											writeln(Y), writeln(P),
-											not(Y =:= P) -> (writeln('Arbol no esta bien etiquetado: Etiqueta de arista es distinta a diferencia entre padre e hijo.'), false);
-											Lnodos = [], Laristas=[],
-											append([X],Lnodos,Lnodos1),
-											append([Z],Lnodos1,Lnodos2),
-											append([Y],Laristas,Laristas1),
-											writeln('Lista de Nodos. '),
-											writeln(Lnodos2),
-											writeln('Lista de Aristas. '),
-											writeln(Laristas1).
+% Predicado bienEtiquetado para un caso base.
+bienEtiquetado(nodo(X,[arista(Y,nodo(Z,[]))])) :- !, not(X = Z),
+												P is abs(X-Z),
+												not(Y =:= P) -> (writeln('Arbol no esta bien etiquetado: Etiqueta de arista es 	distinta a diferencia entre padre e hijo.'), false);	
+												Lnodos = [], Laristas = [],	
+												append([X],Lnodos,Lnodos1),	
+												append([Z],Lnodos1,Lnodos2),
+												append([Y],Laristas,Laristas1),
+												sort(Lnodos2,LnodosO),
+												sort(Laristas1,LaristasO),
+												writeln('Lista de nodos en el arbol'),
+												writeln(LnodosO),
+												writeln('Lista de aristas en el arbol'),
+												writeln(LaristasO).
 
-bienEtiquetado(nodo(X,Lista)) :- writeln('Caso recursivo bienEtiquetado'),
-									!, Lnodos = [], Laristas = [],
+% Predicado bienEtiquetado para el caso recursivo.
+bienEtiquetado(nodo(X,Lista)) :- !, Lnodos = [], Laristas = [],
 									bienEtiquetado_Nodos(nodo(X,Lista),Laristas,Lnodos,LaristasF,LnodosF),
 									max_list(LnodosF,N),
 									max_list(LaristasF,E),
@@ -63,106 +85,81 @@ bienEtiquetado(nodo(X,Lista)) :- writeln('Caso recursivo bienEtiquetado'),
 									writeln(LnodosO),
 									writeln('Lista de aristas en el arbol'),
 									writeln(LaristasO).
-									%(LnodosF =:= L).
-									%writeln('LnodosF'), writeln(A).
-											%bienEtiquetado_Nodos(X,Z,lnodos,laristas,Lista).
-% A LOS PREICADOS AUXILIARES QUE ESTAN ABAJO HAY QUE PASARLES NODO Y ARISTA COMO A LOS NORMALES
-% JUNTO CON LAS LISTAS PARA QUE SIRVA
+
+% Predicado para unificacion de resultado de lista de nodos a devolver.
 bienEtiquetado_Nodos([],Lnodos,Lnodos).
 
+% Predicado auxiliar para la verificacion del buen etiquetamiento de nodos.
 bienEtiquetado_Nodos(nodo(X,[]),Laristas,Lnodos,LaristasR,LnodosR) :- writeln('Caso base bienEtiquetado_Nodos'),
 													writeln(Lnodos),
 													!,not(member(X,Lnodos)),
 													append([X],Lnodos,Lnodos1),
-													writeln('Esta es Lnodos'),
-													writeln(Lnodos1),
-													writeln(Laristas),
 													bienEtiquetado_Aristas([],Laristas,LaristasR),
-													bienEtiquetado_Nodos([],Lnodos1,LnodosR),
-													writeln('ULTIMA LINEA DE bienEtiquetado_Nodos/5 '),
-													writeln(LaristasR),
-													writeln(LnodosR).
+													bienEtiquetado_Nodos([],Lnodos1,LnodosR).
 
-bienEtiquetado_Nodos(nodo(X,[Head|Tail]),Laristas,Lnodos,LaristasR,LnodosR) :- writeln('Caso recursivo bienEtiquetado_Nodos'),
-															!,integer(X)>0,not(member(X,Lnodos)),
+% Predicado auxiliar para la verificacion del buen etiquetamiento de nodos.
+bienEtiquetado_Nodos(nodo(X,[Head|Tail]),Laristas,Lnodos,LaristasR,LnodosR) :- !,integer(X)>0,not(member(X,Lnodos)),
 															append([X],Lnodos,Lnodos1),
-															writeln('VOY A LLAMAR A ARISTA HEAD Y ARISTA TAIL'),
 															bienEtiquetado_Aristas(Head,Laristas,Lnodos1,X,Laristas1,Lnodos2),
-															bienEtiquetado_Aristas(Tail,Laristas1,Lnodos2,X,LaristasR,LnodosR),
-															writeln('VOY A VER MIS RESULTADOS'),
-															writeln(LaristasR),
-															writeln(LnodosR).
-															%bienEtiquetado_Aristas([],LaristasR,LaristasQ),
-															%bienEtiquetado_Nodos([],LnodosR,LnodosQ),
-															%writeln('Aristas'),
-															%writeln(LaristasQ),
-															%writeln('Nodos'),
-															%writeln(LnodosQ).
+															bienEtiquetado_Aristas(Tail,Laristas1,Lnodos2,X,LaristasR,LnodosR).
 
-%ESTABA MODFICANDO bienEtiquetado PARA QUE LLAME a bienEtiquetado_Nodos Y DE ALLI PASAR A ARISTA, ME FALTA ES VERIFICAR QUE NO TENGA QUE CAMBIAR MAS NADA
-
+% Predicado para unificacion de resultado de la lista de aristas a devolver.
 bienEtiquetado_Aristas([],Laristas,Laristas).
 
+% Predicado auxiliar para la verificacion del buen etiquetamiento de aristas.
 bienEtiquetado_Aristas([],Laristas,Lnodos,X,LaristasF,LnodosF) :- bienEtiquetado_Aristas([],Laristas,LaristasF),
 																	bienEtiquetado_Nodos([],Lnodos,LnodosF).
 
-
+% Predicado auxiliar para la verificacion del buen etiquetamiento de aristas.
 bienEtiquetado_Aristas(arista(X,nodo(Y,Hijos)),Laristas,Lnodos,W,LaristasR,LnodosR) :- !, writeln('Caso base recursivo bienEtiquetado_Aristas '), 
 											not(W = Y),
 											P is abs(W-Y),
 											not(X =:= P) -> (writeln('Arbol no esta bien etiquetado: Etiqueta de arista es distinta a diferencia entre padre e hijo.'), false);
-											P is abs(W-Y),
-											writeln('Etiqueta padre: W - Etiqueta arista: X - Etiqueta hijo: Y - Diferencia: P - Lnodos - Laristas'),
-											write(W),write(' '), write(X),write(' '), write(Y),write(' '), 
-											write(P),write(' '), write(Lnodos),write(' '), write(Laristas),nl,
 											not(member(X,Laristas)),
 											append([X],Laristas,Laristas1), writeln(Laristas1),writeln(Lnodos), writeln(Hijos),
-											bienEtiquetado_Nodos(nodo(Y,Hijos),Laristas1,Lnodos,LaristasR,LnodosR),
-											writeln('ULTIMA LINEA DE bienEtiquetado_Aristas/6-1 '),
-											writeln(LaristasR),
-											writeln(LnodosR).
-											%bienEtiquetado_Aristas([],Laristas,Laristas).
+											bienEtiquetado_Nodos(nodo(Y,Hijos),Laristas1,Lnodos,LaristasR,LnodosR).
 
+% Predicado auxiliar para la verificacion del buen etiquetamiento de aristas.
 bienEtiquetado_Aristas([Head|Tail],Laristas,Lnodos,W,LaristasF,LnodosF) :- writeln('Caso recursivo auxiliar bienEtiquetado_Aristas'),
 														bienEtiquetado_Aristas(Head,Laristas,Lnodos,W,Laristas2,Lnodos2),
-														writeln('Falle'), writeln(Tail),
-														writeln(Laristas2), writeln(Lnodos2), writeln(W),
-														bienEtiquetado_Aristas(Tail,Laristas2,Lnodos2,W,LaristasF,LnodosF),
-														writeln('ULTIMA LINEA DE bienEtiquetado_Aristas/6-2 '),
-														writeln(LaristasF),
-														writeln(LnodosF).
+														bienEtiquetado_Aristas(Tail,Laristas2,Lnodos2,W,LaristasF,LnodosF).
 
+% Predicado de esqueleto que devuelve un solo esqueleto valido.
 esqueleto(N,R,Esq) :- !, (R>=N -> writeln('R es mayor o igual a N.'),false);
 						Esque = [],
 						NX is N-1,
 						Contador = 0,
-						writeln(NX), writeln(Contador),
 						esqueleto_auxiliar(NX,R,Contador,Esque,Esq).
 
-esqueleto_auxiliar(0,R,Contador,EsqI,Esq) :- !,writeln('ENTRE EN EL CASO BASE QUE QUIERO. '),
-												Lista = [],
-												writeln(R), writeln(Contador),
+% Predicado auxiliar de esqueleto que sirve para agregar los distintos niveles.
+esqueleto_auxiliar(0,R,Contador,EsqI,Esq) :- !, Lista = [],
 												Diff is R-Contador,
 												integer(Diff)>=0,
-												writeln(Diff),
 												append(Lista,[Contador],Esq1),
-												writeln(Esq1),
 												append(EsquI,[Esq1],EsqO),
-												writeln('Esto es despues de la prueba'),
-												writeln(EsqO),
 												RX is R-Contador,
 												Hijos = [],
-												esqueleto_hijos(0,RX,Contador,EsqO,Hijos,Esq),
-												writeln('En Caso base esqueleto_auxiliar'),
-												writeln(Esq).
+												esqueleto_hijos(0,RX,Contador,EsqO,Hijos,Esq).
 
+% Predicado auxiliar de esqueleto que sirve para decrementar los hijos a colocar.
 esqueleto_auxiliar(N,R,Contador,EsqI,Esq) :- !,P is N-1,
 												Contador1 is Contador+1,
-												writeln(P), writeln(Contador1),
 												esqueleto_auxiliar(P,R,Contador1,EsqI,Esq).
 
+% Predicado donde se colocan los hijos del nodo previo
 esqueleto_hijos(0,R,0,EsqI,Hijos,EsqO) :- !,append(EsqI,[Hijos],EsqO).
 
+% Predicado que sirve para agregar los hijos del nodo al esqueleto.
 esqueleto_hijos(0,R,Contador,EsqI,Hijos,Esq):- 	!, append(Hijos,[R],Aux),
 											Contador1 is Contador-1,
 											esqueleto_hijos(0,R,Contador1,EsqI,Aux,Esq).
+
+% Predicado que sirve para imprimir el arbol dado.
+describirEtiquetamiento(nodo(X,[Head|Tail])) :- !,integer(X)>0,
+												write('Nodo Raiz '),
+												write('etiqueta: '),writeln(X),
+												Head,
+												%nl,
+												(Tail \= []) -> (write('Nodo Raiz '),write('etiqueta: '),write(X),nl,auxiliar(Tail));
+												%auxiliar(Tail),
+												writeln('Fin de arbol.').
