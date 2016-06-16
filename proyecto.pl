@@ -129,8 +129,28 @@ bienEtiquetado_Aristas([Head|Tail],Laristas,Lnodos,W,LaristasF,LnodosF) :- write
 														writeln('ULTIMA LINEA DE bienEtiquetado_Aristas/6-2 '),
 														writeln(LaristasF),
 														writeln(LnodosF).
-														%bienEtiquetado_Aristas([],Laristas,LaristasR),
-														%bienEtiquetado_Nodos([],Lnodos1,LnodosR).
 
+esqueleto(N,R,Esq) :- Esque = [],
+						NX is N-1,
+						Contador = 0,
+						writeln(NX), writeln(Contador),
+						esqueleto_auxiliar(NX,R,Contador,Esque,Esq).
 
-% bienEtiquetado(nodo(V,[arista(E,nodo(W,[]))])) :- append([W], ListaNodos, ListaNodos)
+esqueleto_auxiliar([],Esq,Esq).
+
+esqueleto_auxiliar(0,R,Contador,EsqI,Esq) :- !,writeln('ENTRE EN EL CASO BASE QUE QUIERO. '),
+												writeln(R), writeln(Contador),
+												Diff is R-Contador,
+												integer(Diff)>=0,
+												RX is R-Diff,
+												writeln(Diff),writeln(RX),
+												append(EsqI,[Contador],EsqO),
+												writeln(EsqO),
+												esqueleto_auxiliar([],EsqO,Esq),
+												writeln('En Caso base esqueleto_auxiliar'),
+												writeln(Esq).
+
+esqueleto_auxiliar(N,R,Contador,EsqI,Esq) :- !,P is N-1,
+												Contador1 is Contador+1,
+												writeln(P), writeln(Contador1),
+												esqueleto_auxiliar(P,R,Contador1,EsqI,Esq).
