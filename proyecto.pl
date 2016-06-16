@@ -50,7 +50,19 @@ bienEtiquetado(nodo(X,Lista)) :- writeln('Caso recursivo bienEtiquetado'),
 									!, Lnodos = [], Laristas = [],
 									bienEtiquetado_Nodos(nodo(X,Lista),Laristas,Lnodos,LaristasF,LnodosF),
 									writeln('Lista Final de Nodos'),writeln(LnodosF), 
-									writeln('Lista Final de Aristas'),writeln(LaristasF).
+									writeln('Lista Final de Aristas'),writeln(LaristasF),
+									max_list(LnodosF,N),
+									max_list(LaristasF,E),
+									Maxarista is N-1,
+									(E =:= Maxarista),
+									sort(LnodosF,LnodosO),
+									sort(LaristasF,LaristasO),
+									setof(Z,between(1,N,Z),L),
+									setof(W,between(1,E,W),A),
+									compare(=,LnodosO,L),
+									compare(=,LaristasO,A).
+									%(LnodosF =:= L).
+									%writeln('LnodosF'), writeln(A).
 											%bienEtiquetado_Nodos(X,Z,lnodos,laristas,Lista).
 % A LOS PREICADOS AUXILIARES QUE ESTAN ABAJO HAY QUE PASARLES NODO Y ARISTA COMO A LOS NORMALES
 % JUNTO CON LAS LISTAS PARA QUE SIRVA
