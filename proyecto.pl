@@ -49,8 +49,6 @@ bienEtiquetado(nodo(X,[arista(Y,nodo(Z,[]))])) :- !,writeln('Caso base Num 2 bie
 bienEtiquetado(nodo(X,Lista)) :- writeln('Caso recursivo bienEtiquetado'),
 									!, Lnodos = [], Laristas = [],
 									bienEtiquetado_Nodos(nodo(X,Lista),Laristas,Lnodos,LaristasF,LnodosF),
-									writeln('Lista Final de Nodos'),writeln(LnodosF), 
-									writeln('Lista Final de Aristas'),writeln(LaristasF),
 									max_list(LnodosF,N),
 									max_list(LaristasF,E),
 									Maxarista is N-1,
@@ -60,7 +58,11 @@ bienEtiquetado(nodo(X,Lista)) :- writeln('Caso recursivo bienEtiquetado'),
 									setof(Z,between(1,N,Z),L),
 									setof(W,between(1,E,W),A),
 									compare(=,LnodosO,L),
-									compare(=,LaristasO,A).
+									compare(=,LaristasO,A),
+									writeln('Lista de nodos en el arbol'),
+									writeln(LnodosO),
+									writeln('Lista de aristas en el arbol'),
+									writeln(LaristasO).
 									%(LnodosF =:= L).
 									%writeln('LnodosF'), writeln(A).
 											%bienEtiquetado_Nodos(X,Z,lnodos,laristas,Lista).
@@ -130,23 +132,27 @@ bienEtiquetado_Aristas([Head|Tail],Laristas,Lnodos,W,LaristasF,LnodosF) :- write
 														writeln(LaristasF),
 														writeln(LnodosF).
 
-esqueleto(N,R,Esq) :- Esque = [],
+esqueleto(N,R,Esq) :- !, (R>=N -> writeln('R es mayor o igual a N.'),false);
+						Esque = [],
 						NX is N-1,
 						Contador = 0,
 						writeln(NX), writeln(Contador),
 						esqueleto_auxiliar(NX,R,Contador,Esque,Esq).
 
-esqueleto_auxiliar([],Esq,Esq).
-
 esqueleto_auxiliar(0,R,Contador,EsqI,Esq) :- !,writeln('ENTRE EN EL CASO BASE QUE QUIERO. '),
+												Lista = [],
 												writeln(R), writeln(Contador),
 												Diff is R-Contador,
 												integer(Diff)>=0,
-												RX is R-Diff,
-												writeln(Diff),writeln(RX),
-												append(EsqI,[Contador],EsqO),
+												writeln(Diff),
+												append(Lista,[Contador],Esq1),
+												writeln(Esq1),
+												append(EsquI,[Esq1],EsqO),
+												writeln('Esto es despues de la prueba'),
 												writeln(EsqO),
-												esqueleto_auxiliar([],EsqO,Esq),
+												RX is R-Contador,
+												Hijos = [],
+												esqueleto_hijos(0,RX,Contador,EsqO,Hijos,Esq),
 												writeln('En Caso base esqueleto_auxiliar'),
 												writeln(Esq).
 
@@ -154,3 +160,9 @@ esqueleto_auxiliar(N,R,Contador,EsqI,Esq) :- !,P is N-1,
 												Contador1 is Contador+1,
 												writeln(P), writeln(Contador1),
 												esqueleto_auxiliar(P,R,Contador1,EsqI,Esq).
+
+esqueleto_hijos(0,R,0,EsqI,Hijos,EsqO) :- !,append(EsqI,[Hijos],EsqO).
+
+esqueleto_hijos(0,R,Contador,EsqI,Hijos,Esq):- 	!, append(Hijos,[R],Aux),
+											Contador1 is Contador-1,
+											esqueleto_hijos(0,R,Contador1,EsqI,Aux,Esq).
